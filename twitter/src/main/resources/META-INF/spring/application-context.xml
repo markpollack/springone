@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:hdp="http://www.springframework.org/schema/hadoop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+	xmlns:int-ip="http://www.springframework.org/schema/integration/ip"
+	xmlns:int-jmx="http://www.springframework.org/schema/integration/jmx"
+	xmlns:int-http="http://www.springframework.org/schema/integration/http"
+	xmlns:int-twitter="http://www.springframework.org/schema/integration/twitter"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration/http http://www.springframework.org/schema/integration/http/spring-integration-http-2.2.xsd
+		http://www.springframework.org/schema/integration/ip http://www.springframework.org/schema/integration/ip/spring-integration-ip.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+		http://www.springframework.org/schema/integration/jmx http://www.springframework.org/schema/integration/jmx/spring-integration-jmx.xsd
+		http://www.springframework.org/schema/integration/stream http://www.springframework.org/schema/integration/stream/spring-integration-stream-2.1.xsd
+		http://www.springframework.org/schema/integration/twitter http://www.springframework.org/schema/integration/twitter/spring-integration-twitter-2.1.xsd		
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd
+		http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+
+
+
+	<import resource="controlbus-context.xml"/>
+	
+	<context:property-placeholder location="classpath:hadoop.properties,classpath:twitter-hdfs.properties,classpath:twitter-oauth.properties"/>
+	
+	<hdp:configuration register-url-handler="false">
+		fs.default.name=${hd.fs}
+	</hdp:configuration>
+	
+	<bean id="hadoopFs" class="org.springframework.data.hadoop.fs.FileSystemFactoryBean">
+		<property name="configuration" ref="hadoopConfiguration"/>
+	</bean>
+	
+	<int:channel id="input-search">
+	     <int:interceptors>
+	         <int:wire-tap channel="logger"/>
+	     </int:interceptors>	
+	</int:channel>
+	
+	<int:channel id="input-gardenhose">
+	     <int:interceptors>
+	         <int:wire-tap channel="logger-gardenhose"/>
+	     </int:interceptors>	
+	</int:channel>	
+	
+ 	<int:logging-channel-adapter id="logger" level="INFO" 
+ 		expression="'from:' + payload.getFromUser() + ',source:' + payload.getSource() + ',twitter data:' + payload.getText()"/>
+ 	
+  	<int:logging-channel-adapter id="logger-gardenhose" level="INFO" 
+ 		expression="'payload' + payload.toString()"/>
+ 
+ 
+	<int:channel id="output"/>
+	
+	
+	<bean id="twitterTemplate"	class="org.springframework.social.twitter.api.impl.TwitterTemplate">
+		<constructor-arg value="${twitter.oauth.consumerKey}" />
+		<constructor-arg value="${twitter.oauth.consumerSecret}" />
+		<constructor-arg value="${twitter.oauth.accessToken}" />
+		<constructor-arg value="${twitter.oauth.accessTokenSecret}" />
+	</bean>
+	
+	<bean class="com.oreilly.springdata.twitter.GardenhoseChannelAdapter">
+		<constructor-arg ref="twitterTemplate"/>
+		<property name="outputChannel" ref="input-gardenhose"/>
+	</bean>
+
+	<bean id="tweetObjectMapper" class="com.oreilly.springdata.twitter.TweetObjectMapper"/>	
+	
+	<!-- 
+	<int-twitter:search-inbound-channel-adapter id="searchAdapter" channel="input"
+												query="#voteobama OR #voteromney OR #votebieber">
+		<int:poller fixed-rate="5000" max-messages-per-poll="50" />
+	</int-twitter:search-inbound-channel-adapter>
+	-->
+		
+	<int:chain id="garenHosetoHadoop" input-channel="input-gardenhose">
+	  <int:filter expression="payload.contains('text')"/>
+	  <int:json-to-object-transformer type="org.springframework.social.twitter.api.Tweet" object-mapper="tweetObjectMapper"/>					
+	  <int:transformer ref="entityAwareTweetTransformer"/>
+	  <int:transformer ref="tweetToByteTransformer"/>
+      <int:outbound-channel-adapter ref="hdfsWritingMessageHandler"/>
+	</int:chain>
+			
+	<int:chain id="TLHadoop" input-channel="input-search">		
+	  <int:transformer ref="entityAwareTweetTransformer"/>
+	  <int:transformer ref="tweetToByteTransformer"/>
+      <int:outbound-channel-adapter ref="hdfsWritingMessageHandler"/>
+	</int:chain>
+	
+	<bean id="entityAwareTweetTransformer" class="com.oreilly.springdata.twitter.EntityAwareTweetTransformer"/>
+		
+	<bean id="tweetToByteTransformer" class="com.oreilly.springdata.twitter.TweetToByteTransformer"/>
+		 
+	<bean id="hdfsWritingMessageHandler" class="com.oreilly.springdata.hadoop.streaming.HdfsWritingMessageHandler">
+		<constructor-arg ref="hdfsWriterFactory"/>
+	</bean>
+	
+	<bean id="hdfsWriterFactory" class="com.oreilly.springdata.hadoop.streaming.HdfsTextFileWriterFactory">
+		<constructor-arg ref="hadoopFs"/>
+	    <property name="basePath" value="${twitter.hdfs.basePath}"/>
+		<property name="baseFilename" value="${twitter.hdfs.baseFilename}"/>
+		<property name="fileSuffix" value="${twitter.hdfs.fileSuffix}"/>
+		<property name="rolloverThresholdInBytes" value="${twitter.hdfs.rolloverThresholdInBytes}"/>
+	</bean>
+	
+	<bean id="job" class="com.oreilly.springdata.hadoop.streaming.HashtagCounter"
+		c:input="/data/tweets/"
+		c:output="file:public/mrout"
+		c:config-ref="hadoopConfiguration"/>
+
+</beans>
