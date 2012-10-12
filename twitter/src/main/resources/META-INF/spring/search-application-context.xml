@@ -58,7 +58,7 @@
 		
 	<bean id="tweetToByteTransformer" class="com.oreilly.springdata.twitter.TweetToByteTransformer"/>
 		 
-	<bean id="job" class="com.oreilly.springdata.hadoop.streaming.HashtagCounter"
+	<bean id="job" class="com.oreilly.springdata.hadoop.streaming.HashtagCounterAnalysis"
 		c:input="/data/tweets/"
 		c:output="file:public/mrout"
 		c:config-ref="hadoopConfiguration"/>

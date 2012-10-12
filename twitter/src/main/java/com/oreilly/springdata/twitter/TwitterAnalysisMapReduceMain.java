@@ -10,27 +10,34 @@ import org.mortbay.jetty.webapp.WebAppContext;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-public class Streaming {
 
-	private static final Log log = LogFactory.getLog(Streaming.class);
+import com.oreilly.springdata.hadoop.streaming.HashtagCounterAnalysis;
+public class TwitterAnalysisMapReduceMain {
+
+	private static final Log log = LogFactory.getLog(TwitterAnalysisMapReduceMain.class);
 
 	public static void main(String[] args) throws Exception {
-		/*
+		
 		AbstractApplicationContext context = new ClassPathXmlApplicationContext(
-				"/META-INF/spring/application-context.xml", Streaming.class);
-		log.info("Streaming Application Running");*/
-	    Server server = new Server(8090);
+				"/META-INF/spring/analysis-application-context.xml", TwitterAnalysisMapReduceMain.class);
+		log.info("TwitterAnalysisMapReduceMain Application Running");
+		
+		HashtagCounterAnalysis analysis = context.getBean(HashtagCounterAnalysis.class);
+		analysis.run();
+		
+		/*
+	    Server server = new Server(8097);
 	    Context context = new Context(server, "/", Context.SESSIONS);
 
 	    DispatcherServlet dispatcherServlet = new DispatcherServlet();
 	    dispatcherServlet
-	        .setContextConfigLocation("classpath:/META-INF/spring/application-context.xml");
+	        .setContextConfigLocation("classpath:/META-INF/spring/analysis-application-context.xml");
 
 	    ServletHolder servletHolder = new ServletHolder(dispatcherServlet);
 	    context.addServlet(servletHolder, "/*");
 
 	    server.start();
-	    server.join();
+	    server.join();*/
 	    //createWebContainerWithWebXML();
 	}
 

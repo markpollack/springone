@@ -57,8 +57,11 @@
 	  <int:filter expression="payload.contains('text')"/>
 	  <int:json-to-object-transformer type="org.springframework.social.twitter.api.Tweet" object-mapper="tweetObjectMapper"/>					
 	  <int:transformer ref="entityAwareTweetTransformer"/>
+	  <int:service-activator ref="tweetCounter" method="count"/>
 	  <int:transformer ref="tweetToByteTransformer"/>
+	  <!-- 
       <int:outbound-channel-adapter ref="hdfsWritingMessageHandler"/>
+      -->
 	</int:chain>	
 	
 	<bean id="tweetObjectMapper" class="com.oreilly.springdata.twitter.TweetObjectMapper"/>
@@ -67,9 +70,18 @@
 		
 	<bean id="tweetToByteTransformer" class="com.oreilly.springdata.twitter.TweetToByteTransformer"/>
 		 
-	<bean id="job" class="com.oreilly.springdata.hadoop.streaming.HashtagCounter"
-		c:input="/data/tweets/"
-		c:output="file:public/mrout"
-		c:config-ref="hadoopConfiguration"/>
+	<bean id="jedisConnectionFactory" 
+			class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"/>
+			
+	<bean id="stringRedisTemplate" class="org.springframework.data.redis.core.StringRedisTemplate"
+    		  p:connection-factory-ref="jedisConnectionFactory"/>
+					 
+	<bean id="tweetCounter" class="com.oreilly.springdata.redis.RedisTweetEntityCounter">
+		<constructor-arg ref="stringRedisTemplate"/>
+	</bean>
+
+	<bean class="com.oreilly.springdata.redis.RedisFlusher">
+		<constructor-arg ref="stringRedisTemplate"/>
+	</bean>
 
 </beans>

@@ -15,10 +15,6 @@ public class TwitterGardenHoseMain {
 	private static final Log log = LogFactory.getLog(TwitterGardenHoseMain.class);
 
 	public static void main(String[] args) throws Exception {
-		/*
-		AbstractApplicationContext context = new ClassPathXmlApplicationContext(
-				"/META-INF/spring/application-context.xml", Streaming.class);
-		log.info("Streaming Application Running");*/
 	    Server server = new Server(8096);
 	    Context context = new Context(server, "/", Context.SESSIONS);
 

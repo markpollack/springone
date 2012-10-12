@@ -51,7 +51,7 @@ import cascading.tuple.Fields;
  * @author Costin Leau
  * @author Mark Fisher
  */
-public class HashtagCounter implements Runnable {
+public class HashtagCounterAnalysis implements Runnable {
 
 	private String outputPath;
 
@@ -60,7 +60,7 @@ public class HashtagCounter implements Runnable {
 	private Configuration hadoopConfiguration;
 
 
-	public HashtagCounter(String input, Resource output, Configuration config) {
+	public HashtagCounterAnalysis(String input, Resource output, Configuration config) {
 		this.inputPath = input;
 		try {
 			this.outputPath = output.getFile().getAbsolutePath();

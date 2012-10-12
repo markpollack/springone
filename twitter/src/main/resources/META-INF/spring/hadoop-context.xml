@@ -29,5 +29,11 @@
 		<property name="rolloverThresholdInBytes" value="${twitter.hdfs.rolloverThresholdInBytes}"/>
 	</bean>
 
+			 
+	<bean id="job" class="com.oreilly.springdata.hadoop.streaming.HashtagCounterAnalysis"
+		c:input="/data/tweets-raw/2012/10/11"
+		c:output="file:public/mrout"
+		c:config-ref="hadoopConfiguration"/>
+
 
 </beans>

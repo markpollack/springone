@@ -20,7 +20,7 @@ public class ControlBusController {
 	private MessageChannel inOperationChannel;	
 	
 	@Autowired
-	private HashtagCounter hashtagCounter;
+	private HashtagCounterAnalysis hashtagCounter;
 	
 	@RequestMapping("/admin")
 	public @ResponseBody String simple(@RequestBody String message) {

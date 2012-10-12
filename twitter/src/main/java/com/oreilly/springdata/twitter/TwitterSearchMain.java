@@ -15,10 +15,7 @@ public class TwitterSearchMain {
 	private static final Log log = LogFactory.getLog(TwitterSearchMain.class);
 
 	public static void main(String[] args) throws Exception {
-		/*
-		AbstractApplicationContext context = new ClassPathXmlApplicationContext(
-				"/META-INF/spring/application-context.xml", Streaming.class);
-		log.info("Streaming Application Running");*/
+
 	    Server server = new Server(8095);
 	    Context context = new Context(server, "/", Context.SESSIONS);
 
