@@ -26,10 +26,41 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
 
 
-
+	<context:property-placeholder location="classpath:hadoop.properties,classpath:twitter-hdfs-search.properties"/>
+	
 	<import resource="controlbus-context.xml"/>
 	
 	<import resource="hadoop-context.xml"/>
-
+		
+	<int:channel id="input-search">
+	     <int:interceptors>
+	         <int:wire-tap channel="logger"/>
+	     </int:interceptors>	
+	</int:channel>
+		
+ 	<int:logging-channel-adapter id="logger" level="INFO" 
+ 		expression="'from:' + payload.getFromUser() + ',source:' + payload.getSource() + ',twitter data:' + payload.getText()"/>
+ 	
+	<int:channel id="output"/>
+			 
+	<int-twitter:search-inbound-channel-adapter id="searchAdapter" channel="input-search"
+												query="#voteobama OR #voteromney OR #votebieber">
+		<int:poller fixed-rate="5000" max-messages-per-poll="50" />
+	</int-twitter:search-inbound-channel-adapter>
+			
+	<int:chain id="TLHadoop" input-channel="input-search">		
+	  <int:transformer ref="entityAwareTweetTransformer"/>
+	  <int:transformer ref="tweetToByteTransformer"/>
+      <int:outbound-channel-adapter ref="hdfsWritingMessageHandler"/>
+	</int:chain>
+	
+	<bean id="entityAwareTweetTransformer" class="com.oreilly.springdata.twitter.EntityAwareTweetTransformer"/>
+		
+	<bean id="tweetToByteTransformer" class="com.oreilly.springdata.twitter.TweetToByteTransformer"/>
+		 
+	<bean id="job" class="com.oreilly.springdata.hadoop.streaming.HashtagCounter"
+		c:input="/data/tweets/"
+		c:output="file:public/mrout"
+		c:config-ref="hadoopConfiguration"/>
 
 </beans>

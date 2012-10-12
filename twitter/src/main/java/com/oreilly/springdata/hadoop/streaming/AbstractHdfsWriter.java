@@ -35,6 +35,9 @@ public abstract class AbstractHdfsWriter implements HdfsWriter {
 	protected void initializeCounterIfNecessary() {
 		if (!initialized) {
 			FsShell fsShell = new FsShell(getFileSystem().getConf(), getFileSystem());
+			if (!fsShell.test(getBasePath())) {
+				fsShell.mkdir(getBasePath());
+			}
 			int maxCounter = 0;
 			boolean foundFile = false;
 			Collection<FileStatus> fileStats = fsShell.ls(this.getBasePath());
@@ -88,7 +91,7 @@ public abstract class AbstractHdfsWriter implements HdfsWriter {
 		return baseFilename;
 	}
 
-	public void setBaseFilename(String baseFilename) {
+	public void setBaseFilename(String baseFilename) {		
 		this.baseFilename = baseFilename;
 	}
 
@@ -97,7 +100,11 @@ public abstract class AbstractHdfsWriter implements HdfsWriter {
 	}
 
 	public void setBasePath(String basePath) {
-		this.basePath = basePath;
+		if (!basePath.endsWith("/")) {
+			this.basePath = basePath + "/";	
+		} else {
+			this.basePath = basePath;
+		}		
 	}
 
 	public long getCounter() {

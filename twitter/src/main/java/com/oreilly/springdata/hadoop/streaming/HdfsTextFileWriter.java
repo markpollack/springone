@@ -7,6 +7,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IOUtils;
+import org.springframework.data.hadoop.fs.FsShell;
 import org.springframework.integration.Message;
 import org.springframework.integration.MessageHandlingException;
 import org.springframework.util.Assert;
@@ -35,7 +36,7 @@ public class HdfsTextFileWriter extends AbstractHdfsWriter implements HdfsWriter
 	private void prepareOutputStream() throws IOException {
 		boolean found = false;
 		Path name = null;
-		
+				
 		//TODO improve algorithm
 		while (!found) {
 			name = new Path(getFileName());
