@@ -52,13 +52,12 @@
 			
 	<int:chain id="TLHadoop" input-channel="input-search">		
 	  <int:transformer ref="entityAwareTweetTransformer"/>
+	  
 	  <int:service-activator ref="redisElectionHashtagCounter" method="count"/>
 	  
 	  
-	  <int:transformer ref="tweetToByteTransformer"/>
-	  <!-- 
-      <int:outbound-channel-adapter ref="hdfsWritingMessageHandler"/>
-      -->
+	  <int:transformer ref="tweetToByteTransformer"/>	  
+      <int:outbound-channel-adapter ref="hdfsWritingMessageHandler"/>      
 	</int:chain>
 	
 	<bean id="entityAwareTweetTransformer" class="com.oreilly.springdata.twitter.EntityAwareTweetTransformer"/>

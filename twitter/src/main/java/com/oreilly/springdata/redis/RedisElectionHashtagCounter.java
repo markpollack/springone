@@ -31,7 +31,7 @@ public class RedisElectionHashtagCounter {
 		this.redisTemplate = redisTemplate;
 	}
 
-	public void count(EntityAwareTweet entityAwareTweet) {
+	public EntityAwareTweet count(EntityAwareTweet entityAwareTweet) {
 		DateTime dateTime = new DateTime();
 		for (String hashtag : entityAwareTweet.getTags()) {
 			if (hashtag.equalsIgnoreCase("voteobama")) {
@@ -44,6 +44,7 @@ public class RedisElectionHashtagCounter {
 				updateCounters(BIEBER, dateTime);
 			}			
 		}
+		return entityAwareTweet;
 	}
 
 	private void updateCounters(String candidate, DateTime dateTime) {
