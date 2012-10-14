@@ -33,6 +33,8 @@
 	<import resource="controlbus-context.xml"/>
 	
 	<import resource="hadoop-context.xml"/>
+	
+	<import resource="redis-context.xml"/>
 		
 	<int:channel id="input-gardenhose">
 	     <int:interceptors>
@@ -71,14 +73,8 @@
 	<bean id="entityAwareTweetTransformer" class="com.oreilly.springdata.twitter.EntityAwareTweetTransformer"/>
 		
 	<bean id="tweetToByteTransformer" class="com.oreilly.springdata.twitter.TweetToByteTransformer"/>
-		 
-	<bean id="jedisConnectionFactory" 
-			class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"/>
-			
-	<bean id="stringRedisTemplate" class="org.springframework.data.redis.core.StringRedisTemplate"
-    		  p:connection-factory-ref="jedisConnectionFactory"/>
-					 
-	<bean id="tweetCounter" class="com.oreilly.springdata.redis.RedisTweetEntityCounter">
+		 				 
+	<bean id="tweetCounter" class="com.oreilly.springdata.redis.RedisTwitterHashtagCounter">
 		<constructor-arg ref="stringRedisTemplate"/>
 	</bean>
 

@@ -31,6 +31,8 @@
 	<import resource="controlbus-context.xml"/>
 	
 	<import resource="hadoop-context.xml"/>
+	
+	<import resource="redis-context.xml"/>	
 		
 	<int:channel id="input-search">
 	     <int:interceptors>
@@ -50,17 +52,20 @@
 			
 	<int:chain id="TLHadoop" input-channel="input-search">		
 	  <int:transformer ref="entityAwareTweetTransformer"/>
+	  <int:service-activator ref="redisElectionHashtagCounter" method="count"/>
+	  
+	  
 	  <int:transformer ref="tweetToByteTransformer"/>
+	  <!-- 
       <int:outbound-channel-adapter ref="hdfsWritingMessageHandler"/>
+      -->
 	</int:chain>
 	
 	<bean id="entityAwareTweetTransformer" class="com.oreilly.springdata.twitter.EntityAwareTweetTransformer"/>
 		
 	<bean id="tweetToByteTransformer" class="com.oreilly.springdata.twitter.TweetToByteTransformer"/>
-		 
-	<bean id="job" class="com.oreilly.springdata.hadoop.streaming.HashtagCounterAnalysis"
-		c:input="/data/tweets/"
-		c:output="file:public/mrout"
-		c:config-ref="hadoopConfiguration"/>
-
+		
+	<bean id="redisElectionHashtagCounter" class="com.oreilly.springdata.redis.RedisElectionHashtagCounter">	
+		<constructor-arg ref="stringRedisTemplate"/>
+	</bean>
 </beans>

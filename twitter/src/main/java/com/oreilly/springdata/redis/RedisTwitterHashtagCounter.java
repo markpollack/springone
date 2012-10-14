@@ -8,13 +8,13 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 
 import com.oreilly.springdata.twitter.EntityAwareTweet;
 
-public class RedisTweetEntityCounter implements InitializingBean {
+public class RedisTwitterHashtagCounter implements InitializingBean {
 
-	private static final Log log = LogFactory.getLog(RedisTweetEntityCounter.class);
+	private static final Log log = LogFactory.getLog(RedisTwitterHashtagCounter.class);
 	
 	private final StringRedisTemplate redisTemplate;
 
-	public RedisTweetEntityCounter(StringRedisTemplate redisTemplate) {
+	public RedisTwitterHashtagCounter(StringRedisTemplate redisTemplate) {
 		this.redisTemplate = redisTemplate;
 	}
 
